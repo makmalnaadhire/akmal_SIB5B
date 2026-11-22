@@ -1,57 +1,39 @@
 // =====================================================================
-//  SOAL: Mario Bros dengan OOP (TypeScript)
-// =====================================================================
-//  Mario memiliki atribut: HP, speed, positionX, positionY, invincible,
-//  currentForm. Mario dapat berubah menjadi 3 form: 'mario',
-//  'super mario', dan 'fire mario'.
-//
-//  Default: HP = 1, speed = 5, currentForm = 'mario', invincible = false,
-//           positionX = 0, positionY = 0
-//
-//  1. SuperMushroom (Jamur): Mario menjadi Super Mario, HP + 1.
-//  2. FireFlower (Bunga): Mario menjadi Fire Mario, HP + 1,
-//     dan dapat menembakkan bola api.
-//  3. SuperStar (Bintang): Mario kebal terhadap serangan.
-//  4. Diserang: HP - 1 dan kembali ke form 'mario'.
-//     Jika sedang kebal, serangan tidak berpengaruh.
-//  5. Bergerak ke kanan: positionX + speed.
-//  6. Bergerak ke kiri: positionX - speed.
-//
-//  Buat class, attribute, method, dan object.
-//  Terapkan inheritance dan polymorphism.
+//  Mario Bros dengan OOP (TypeScript) - Versi Sederhana
 // =====================================================================
 
-// Kerjakan Quiznya Disini
+type FormName = "mario" | "super mario" | "fire mario";
 
-//Attributes
+// ---------------------------------------------------------------------
+//  CLASS MARIO
+// ---------------------------------------------------------------------
 class Mario {
     hp: number = 1;
-    speed: number = 1;
+    speed: number = 5;
     positionX: number = 0;
     positionY: number = 0;
     invincible: boolean = false;
-    currentForm: string = "mario";
+    currentForm: FormName = "mario";
 
-//Methods
-    attack(): void {
-        console.log("Mario menyerang!");
-    }
-
-    jump(): void {
-        console.log("Mario melompat!");
-    }
-
-    moveRight() {
+    moveRight(): void {
         this.positionX += this.speed;
-        console.log("Mario bergerak!");
+        console.log(`Mario bergerak ke kanan. positionX: ${this.positionX}`);
     }
 
-    moveLeft() {
+    moveLeft(): void {
         this.positionX -= this.speed;
-        console.log("Mario bergerak!");
+        console.log(`Mario bergerak ke kiri. positionX: ${this.positionX}`);
     }
 
-    takeDamage() {
+    shootFireball(): void {
+        if (this.currentForm === "fire mario") {
+            console.log("Mario menembakkan bola api!");
+        } else {
+            console.log(`${this.currentForm} tidak bisa menembakkan bola api!`);
+        }
+    }
+
+    takeDamage(): void {
         if (this.invincible) {
             console.log("Mario kebal terhadap serangan!");
             return;
@@ -59,73 +41,91 @@ class Mario {
 
         this.hp -= 1;
         this.currentForm = "mario";
-
-        console.log("Mario terkena serangan!");
+        console.log("Mario terkena serangan! Kembali ke form mario.");
 
         if (this.hp <= 0) {
             console.log("Mario mati!");
         }
     }
 
-    shootFireball() {
-        if (this.currentForm === "fire mario") {
-            console.log("Mario menembakkan bola api!");
-        } else {
-            console.log("Mario tidak bisa menembakkan bola api!");
-        }
+    status(): void {
+        console.log(
+            `[STATUS] form: ${this.currentForm} | HP: ${this.hp} | ` +
+            `posisi: (${this.positionX}, ${this.positionY}) | kebal: ${this.invincible}`
+        );
     }
 }
 
-class SuperMario extends Mario {
-    jump(): void {
-        console.log("Super Mario menyerang!");
-    }
-}
-
-class FireMario extends Mario {
-    attack(): void {
-        console.log("Fire Mario menembakkan bola api!");
-    }
-}
-
-class PowerUp {
-    use(mario: Mario) {
-        console.log("Mario menggunakan power up!");
-    }
+// ---------------------------------------------------------------------
+//  POWER UP (Inheritance + Polymorphism)
+//  Class induk abstract, tiap turunan meng-override use()
+// ---------------------------------------------------------------------
+abstract class PowerUp {
+    abstract use(mario: Mario): void;
 }
 
 class SuperMushroom extends PowerUp {
-    use(mario: Mario) {
+    use(mario: Mario): void {
         mario.hp += 1;
         mario.currentForm = "super mario";
-        console.log("Mario berubah menjadi Super Mario!");
-        console.log("HP bertambah 1");
+        console.log("Mario berubah menjadi Super Mario! HP + 1");
     }
 }
 
 class FireFlower extends PowerUp {
-    use(mario: Mario) {
+    use(mario: Mario): void {
         mario.hp += 1;
         mario.currentForm = "fire mario";
-        console.log("Mario berubah menjadi Fire Mario!");
-        console.log("HP bertambah 1");
+        console.log("Mario berubah menjadi Fire Mario! HP + 1");
     }
 }
 
 class SuperStar extends PowerUp {
-    use(mario: Mario) {
+    use(mario: Mario): void {
         mario.invincible = true;
-        console.log("Mario kebal serangan!");
+        console.log("Mario kebal terhadap serangan!");
     }
 }
 
-//object
+// ---------------------------------------------------------------------
+//  OBJECT / DEMO
+// ---------------------------------------------------------------------
 const mario = new Mario();
-const superMario = new SuperMario();
-const fireMario = new FireMario();
 const mushroom = new SuperMushroom();
 const flower = new FireFlower();
 const star = new SuperStar();
 
-fireMario.attack();
-console.log(`HP: ${mario.hp}`);
+console.log("=== Awal ===");
+mario.status();
+
+console.log("\n=== Bergerak ===");
+mario.moveRight();
+mario.moveRight();
+mario.moveLeft();
+
+console.log("\n=== Ambil Jamur ===");
+mushroom.use(mario);
+mario.shootFireball();
+mario.status();
+
+console.log("\n=== Ambil Bunga ===");
+flower.use(mario);
+mario.shootFireball();
+mario.status();
+
+console.log("\n=== Diserang ===");
+mario.takeDamage();
+mario.status();
+
+console.log("\n=== Ambil Bintang ===");
+star.use(mario);
+mario.takeDamage(); // tidak berpengaruh
+mario.status();
+
+console.log("\n=== Polymorphism pada PowerUp ===");
+const mario2 = new Mario();
+const powerUps: PowerUp[] = [new SuperMushroom(), new FireFlower(), new SuperStar()];
+for (const p of powerUps) {
+    p.use(mario2); // use() yang dipanggil berbeda-beda sesuai class-nya
+}
+mario2.status();
